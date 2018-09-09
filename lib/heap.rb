@@ -2,7 +2,6 @@ class BinaryMinHeap
   attr_reader :store, :prc
 
   def initialize(&prc)
-    @prc = prc || Proc.new { |parent, child| parent <=> child }
     @store = Array.new
   end
 
@@ -48,8 +47,10 @@ class BinaryMinHeap
   end
 
   def self.heapify_up(array, child_idx, len = array.length, &prc)
+    prc = prc || Proc.new { |parent, child| parent <=> child }
+
     parent_idx = BinaryMinHeap.parent_index(child_idx)
-    return array if parent_idx == 0
+    return array if child_idx == 0
     if prc.call(array[child_idx], array[parent_idx]) == -1
       array[child_idx], array[parent_idx] = array[parent_idx], array[child_idx]
     end
