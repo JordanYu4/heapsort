@@ -10,7 +10,9 @@ class BinaryMinHeap
   end
 
   def extract
-    @store.pop
+    extracted = @store.shift
+    # BinaryMinHeap.heapify_down(@store, 0)
+    # extracted
   end
 
   def peek
@@ -19,7 +21,7 @@ class BinaryMinHeap
 
   def push(val)
     @store.push(val)
-    BinaryMinHeap.heapify_up(self, -1)
+    BinaryMinHeap.heapify_up(store, count - 1)
   end
 
   public
@@ -37,23 +39,33 @@ class BinaryMinHeap
     (child_index - 1) / 2
   end
 
-  def self.heapify_down(array, parent_idx, len = array.length)
-    children = BinaryMinHeap.child_indices(len, parent_idx)
-    return array if children.empty? 
-    if prc.call(array[parent_idx], array[children.first]) == 1
-      array[parent_idx], array[children.first] = array[children.first], array[parent_idx]
+  def self.heapify_down(array, parent_idx, len = array.length, &prc)
+    prc = prc || Proc.new { |parent, child| parent <=> child }
+    child_indices = BinaryMinHeap.child_indices(len, parent_idx)
+    p array
+    p "child indices:"
+    p child_indices
+    child_indices.each do |child_idx|
+      if prc.call(array[parent_idx], array[child_idx]) >= 1
+        # swap_idx = child_indices.sort { |idx| array[idx] }[0]
+        array[parent_idx], array[child_idx] = array[child_idx], array[parent_idx]
+        p array
+        return BinaryMinHeap.heapify_down(array, child_idx)
+      end
     end
-    return BinaryMinHeap.heapify_down(array, children.first, len, prc)
+    p array
+    array
   end
 
   def self.heapify_up(array, child_idx, len = array.length, &prc)
-    prc = prc || Proc.new { |parent, child| parent <=> child }
-
-    parent_idx = BinaryMinHeap.parent_index(child_idx)
+    prc = prc || Proc.new { |child, parent| child <=> parent }
     return array if child_idx == 0
+    
+    parent_idx = BinaryMinHeap.parent_index(child_idx)
     if prc.call(array[child_idx], array[parent_idx]) == -1
       array[child_idx], array[parent_idx] = array[parent_idx], array[child_idx]
+      return BinaryMinHeap.heapify_up(array, parent_idx, len, &prc)
     end
-    return BinaryMinHeap.heapify_down(array, parent_idx, len, prc)
+    array
   end
 end
